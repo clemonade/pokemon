@@ -2,10 +2,10 @@ import {inject, Injectable} from "@angular/core";
 import {Ability, EvolutionChain, NamedAPIResourceList, PokemonSpecies, Type} from "pokenode-ts";
 import {HttpClient, HttpContext} from "@angular/common/http";
 import {PokemonExtended, PokemonPaginationParams} from "../models/pokemon";
-import {BYPASS_ERROR_INTERCEPTOR} from "../../core/interceptors/error.interceptor";
+import {BYPASS_ERROR_INTERCEPTOR} from "../interceptors/error.interceptor";
 import {Observable} from "rxjs";
-import {BYPASS_LOADING_INTERCEPTOR} from "../../core/interceptors/loading.interceptor";
-import {BypassInterceptor} from "../../core/models/app";
+import {BYPASS_LOADING_INTERCEPTOR} from "../interceptors/loading.interceptor";
+import {BypassInterceptor} from "../models/app";
 
 @Injectable({
   providedIn: "root"

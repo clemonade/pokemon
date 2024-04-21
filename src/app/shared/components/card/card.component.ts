@@ -1,7 +1,7 @@
 import {ChangeDetectionStrategy, Component, Input} from "@angular/core";
-import {PokemonExtended} from "../../models/pokemon";
+import {PokemonExtended} from "../../../core/models/pokemon";
 import {MatCard, MatCardContent, MatCardHeader, MatCardTitle, MatCardTitleGroup} from "@angular/material/card";
-import {STAT_MAP, TYPE_MAP} from "../../constants/pokemon";
+import {STAT_MAP, TYPE_MAP} from "../../../core/constants/pokemon";
 import {DecimalPipe, NgTemplateOutlet, SlicePipe, TitleCasePipe} from "@angular/common";
 import {ReplacePipe} from "../../pipes/replace.pipe";
 import {TagComponent} from "../tag/tag.component";

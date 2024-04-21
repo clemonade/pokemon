@@ -1,7 +1,7 @@
 import {Routes} from "@angular/router";
 import {ListComponent} from "./features/list/list.component";
 import {DetailComponent} from "./features/detail/detail.component";
-import {pokemonResolver} from "./shared/guards/pokemon.resolver";
+import {pokemonResolver} from "./core/resolvers/pokemon.resolver";
 import {
   DEFAULT_PATH,
   DETAIL_ROUTE_PARAM,

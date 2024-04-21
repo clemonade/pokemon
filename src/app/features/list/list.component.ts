@@ -7,7 +7,7 @@ import {
   OnInit,
   ViewChild
 } from "@angular/core";
-import {PokeApiService} from "../../shared/services/poke-api.service";
+import {PokeApiService} from "../../core/services/poke-api.service";
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {NamedAPIResource} from "pokenode-ts";
 import {
@@ -22,7 +22,7 @@ import {
   switchMap,
   tap
 } from "rxjs";
-import {PokemonExtended} from "../../shared/models/pokemon";
+import {PokemonExtended} from "../../core/models/pokemon";
 import {CardComponent} from "../../shared/components/card/card.component";
 import {CdkFixedSizeVirtualScroll, CdkVirtualForOf, CdkVirtualScrollViewport} from "@angular/cdk/scrolling";
 import {DEFAULT_PATH, PAGINATION_PARAMS_LIMIT, WINDOWS_RESIZE_DEBOUNCE_TIME} from "../../core/constants/app";

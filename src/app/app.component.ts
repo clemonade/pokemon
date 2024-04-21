@@ -12,5 +12,4 @@ import {LoadingComponent} from "./core/components/loading/loading.component";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppComponent {
-  // title = 'wcc';
 }

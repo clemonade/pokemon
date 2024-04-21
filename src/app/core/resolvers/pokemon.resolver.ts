@@ -1,5 +1,5 @@
 import {ResolveFn, Router} from "@angular/router";
-import {DETAIL_ROUTE_PARAM, ERROR_PATH, NAVIGATE_STATE_ERROR_MESSAGE} from "../../core/constants/app";
+import {DETAIL_ROUTE_PARAM, ERROR_PATH, NAVIGATE_STATE_ERROR_MESSAGE} from "../constants/app";
 import {DestroyRef, inject} from "@angular/core";
 import {PokeApiService} from "../services/poke-api.service";
 import {catchError, EMPTY, map, take} from "rxjs";

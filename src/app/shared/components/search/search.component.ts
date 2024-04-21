@@ -13,14 +13,14 @@ import {MatDialog, MatDialogActions, MatDialogClose, MatDialogContent, MatDialog
 import {FormControl, ReactiveFormsModule, ValidatorFn} from "@angular/forms";
 import {catchError, debounceTime, distinctUntilChanged, filter, map, of, switchMap, tap} from "rxjs";
 import {DEFAULT_PATH, SEARCH_DEBOUNCE_TIME, WHITESPACE_REG_EXP} from "../../../core/constants/app";
-import {PokeApiService} from "../../services/poke-api.service";
-import {PokemonExtended} from "../../models/pokemon";
+import {PokeApiService} from "../../../core/services/poke-api.service";
+import {PokemonExtended} from "../../../core/models/pokemon";
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {CardComponent} from "../card/card.component";
 import {MatError, MatFormField, MatInput, MatLabel} from "@angular/material/input";
 import {RouterLink} from "@angular/router";
 import {MatProgressBar} from "@angular/material/progress-bar";
-import {SEARCH_REG_EXP} from "../../constants/pokemon";
+import {SEARCH_REG_EXP} from "../../../core/constants/pokemon";
 
 @Component({
   selector: "app-search",
