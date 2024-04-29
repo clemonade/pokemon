@@ -8,83 +8,85 @@
         <app-card [pokemon]="pokemon"></app-card>
       </div>
 
-      <div class="grid gap-4 md:col-span-2">
-        @if (evolutionChain$| async; as evolutionChain) {
+      <div class="grid md:col-span-2">
+        <div class="flex flex-col gap-4">
           <div class="flex flex-col gap-2">
             <span class="text-xl underline">Evolution Chain</span>
-            <div class="flex gap-2 flex-wrap items-center">
-              <ng-container [ngTemplateOutlet]="chainTemplate"
-                            [ngTemplateOutletContext]="{$implicit: evolutionChain.chain}">
-              </ng-container>
-            </div>
-            <ng-template #chainTemplate let-chain>
-              <a mat-button [routerLink]="['/' + DEFAULT_PATH + '/' + (chain.species.url | urlId)]">
+            @if (evolutionChain$| async; as evolutionChain) {
+              <div class="flex gap-2 flex-wrap items-center">
+                <ng-container [ngTemplateOutlet]="chainTemplate"
+                              [ngTemplateOutletContext]="{$implicit: evolutionChain.chain}">
+                </ng-container>
+                <ng-template #chainTemplate let-chain>
+                  <a mat-button [routerLink]="['/' + DEFAULT_PATH + '/' + (chain.species.url | urlId)]">
                 <span
                   [class.text-lg]="(chain.species.url | urlId) === pokemon.id.toString()">{{ chain.species.name | replace | titlecase }}
                 </span>
-              </a>
-              @if (chain.evolves_to.length) {
-                <mat-icon fontIcon="arrow_forward"></mat-icon>
-                <ng-container [ngTemplateOutlet]="chainTemplate"
-                              [ngTemplateOutletContext]="{$implicit: chain.evolves_to[0]}">
-                </ng-container>
-              }
-            </ng-template>
-          </div>
-        }
-
-        <div class="flex flex-col gap-2">
-          <span class="text-xl underline">Abilities</span>
-          @if (abilities$ | async; as abilities) {
-            @for (ability of pokemon.abilities; track $index) {
-              <div class="flex gap-2">
-                <span class="text-lg">{{ ability.ability.name | replace | titlecase }}</span>
-                @if (ability.is_hidden) {
-                  <app-tag text="HA"></app-tag>
-                }
+                  </a>
+                  @if (chain.evolves_to.length) {
+                    <mat-icon fontIcon="arrow_forward"></mat-icon>
+                    <ng-container [ngTemplateOutlet]="chainTemplate"
+                                  [ngTemplateOutletContext]="{$implicit: chain.evolves_to[0]}">
+                    </ng-container>
+                  }
+                </ng-template>
               </div>
-              @if (abilities[ability.ability.name]; as abilityDetail) {
-                @for (effectEntries of abilityDetail.effect_entries; track $index) {
-                  @if (effectEntries.language.name === LANGUAGE) {
-                    <div class="flex flex-col gap-1">
-                      <span class="text-base">{{ effectEntries.short_effect }}</span>
-                      <span class="text-sm italic">{{ effectEntries.effect }}</span>
-                    </div>
+            }
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <span class="text-xl underline">Abilities</span>
+            @if (abilities$ | async; as abilities) {
+              @for (ability of pokemon.abilities; track $index) {
+                <div class="flex gap-2">
+                  <span class="text-lg">{{ ability.ability.name | replace | titlecase }}</span>
+                  @if (ability.is_hidden) {
+                    <app-tag text="HA"></app-tag>
+                  }
+                </div>
+                @if (abilities[ability.ability.name]; as abilityDetail) {
+                  @for (effectEntries of abilityDetail.effect_entries; track $index) {
+                    @if (effectEntries.language.name === LANGUAGE) {
+                      <div class="flex flex-col gap-1">
+                        <span class="text-base">{{ effectEntries.short_effect }}</span>
+                        <span class="text-sm italic">{{ effectEntries.effect }}</span>
+                      </div>
+                    }
                   }
                 }
               }
             }
-          }
-        </div>
+          </div>
 
-        <div class="flex flex-col gap-2">
-          <span class="text-xl underline">Type Efficiency</span>
-          @if (types$| async; as types) {
-            <div class="grid gap-2 lg:grid-cols-2">
-              @for (type of pokemon.types; track $index) {
-                <div class="flex flex-col gap-2">
-                  <span class="text-lg">{{ type.type.name | replace | titlecase }}</span>
-                  @if (types[type.type.name]; as typeDetail) {
-                    <div class="flex flex-col gap-2">
-                      @for (damageRelations of typeDetail.damage_relations | keyvalue; track $index) {
-                        @if (damageRelations.value.length) {
-                          <div class="flex gap-2 flex-wrap items-center">
-                            <span>{{ damageRelations.key | replace: UNDERSCORE_REG_EXP | titlecase }}</span>
-                            @for (damageRelation of damageRelations.value; track $index) {
-                              <app-tag text="{{damageRelation.name| replace | titlecase}}"
-                                       textColor="text-white"
-                                       [backgroundColor]="TYPE_MAP[damageRelation.name]">
-                              </app-tag>
-                            }
-                          </div>
+          <div class="flex flex-col gap-2">
+            <span class="text-xl underline">Type Efficiency</span>
+            @if (types$| async; as types) {
+              <div class="grid gap-2 lg:grid-cols-2">
+                @for (type of pokemon.types; track $index) {
+                  <div class="flex flex-col gap-2">
+                    <span class="text-lg">{{ type.type.name | replace | titlecase }}</span>
+                    @if (types[type.type.name]; as typeDetail) {
+                      <div class="flex flex-col gap-2">
+                        @for (damageRelations of typeDetail.damage_relations | keyvalue; track $index) {
+                          @if (damageRelations.value.length) {
+                            <div class="flex gap-2 flex-wrap items-center">
+                              <span>{{ damageRelations.key | replace: UNDERSCORE_REG_EXP | titlecase }}</span>
+                              @for (damageRelation of damageRelations.value; track $index) {
+                                <app-tag text="{{damageRelation.name| replace | titlecase}}"
+                                         textColor="text-white"
+                                         [backgroundColor]="TYPE_MAP[damageRelation.name]">
+                                </app-tag>
+                              }
+                            </div>
+                          }
                         }
-                      }
-                    </div>
-                  }
-                </div>
-              }
-            </div>
-          }
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
         </div>
       </div>
     </div>
