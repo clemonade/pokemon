@@ -2,18 +2,19 @@
   <div class="flex justify-center">
     <button mat-button [routerLink]="['/' + DEFAULT_PATH]">Pokémon List</button>
   </div>
-  @if (pokemon) {
+  @if (pokemon$ | async; as pokemon) {
     <div class="grid gap-4 md:grid-cols-3">
       <div class="grid items-center justify-items-center md:col-span-1">
         <app-card [pokemon]="pokemon"></app-card>
       </div>
+
       <div class="grid gap-4 md:col-span-2">
-        @if (evolutionChain?.chain) {
+        @if (evolutionChain$| async; as evolutionChain) {
           <div class="flex flex-col gap-2">
             <span class="text-xl underline">Evolution Chain</span>
             <div class="flex gap-2 flex-wrap items-center">
               <ng-container [ngTemplateOutlet]="chainTemplate"
-                            [ngTemplateOutletContext]="{$implicit: evolutionChain?.chain}">
+                            [ngTemplateOutletContext]="{$implicit: evolutionChain.chain}">
               </ng-container>
             </div>
             <ng-template #chainTemplate let-chain>
@@ -34,22 +35,22 @@
 
         <div class="flex flex-col gap-2">
           <span class="text-xl underline">Abilities</span>
-          @for (ability of pokemon.abilities; track $index) {
-            <div class="flex gap-2">
-              <span class="text-lg">{{ ability.ability.name | replace | titlecase }}</span>
-              @if (ability.is_hidden) {
-                <app-tag text="HA"></app-tag>
-              }
-            </div>
-            @if (abilities[ability.ability.name]) {
-              <!--TODO: flavor_text_entries if empty effect_entries-->
-                <!--TODO: pipe to find by language-->
-              @for (effectEntries of abilities[ability.ability.name].effect_entries; track $index) {
-                @if (effectEntries.language.name === LANGUAGE) {
-                  <div class="flex flex-col gap-1">
-                    <span class="text-base">{{ effectEntries.short_effect }}</span>
-                    <span class="text-sm italic">{{ effectEntries.effect }}</span>
-                  </div>
+          @if (abilities$ | async; as abilities) {
+            @for (ability of pokemon.abilities; track $index) {
+              <div class="flex gap-2">
+                <span class="text-lg">{{ ability.ability.name | replace | titlecase }}</span>
+                @if (ability.is_hidden) {
+                  <app-tag text="HA"></app-tag>
+                }
+              </div>
+              @if (abilities[ability.ability.name]; as abilityDetail) {
+                @for (effectEntries of abilityDetail.effect_entries; track $index) {
+                  @if (effectEntries.language.name === LANGUAGE) {
+                    <div class="flex flex-col gap-1">
+                      <span class="text-base">{{ effectEntries.short_effect }}</span>
+                      <span class="text-sm italic">{{ effectEntries.effect }}</span>
+                    </div>
+                  }
                 }
               }
             }
@@ -58,30 +59,32 @@
 
         <div class="flex flex-col gap-2">
           <span class="text-xl underline">Type Efficiency</span>
-          <div class="grid gap-2 lg:grid-cols-2">
-            @for (type of pokemon.types; track $index) {
-              <div class="flex flex-col gap-2">
-                <span class="text-lg">{{ type.type.name | replace | titlecase }}</span>
-                @if (types[type.type.name]) {
-                  <div class="flex flex-col gap-2">
-                    @for (damageRelations of types[type.type.name].damage_relations | keyvalue; track $index) {
-                      @if (damageRelations.value.length) {
-                        <div class="flex gap-2 flex-wrap items-center">
-                          <span>{{ damageRelations.key | replace: UNDERSCORE_REG_EXP | titlecase }}</span>
-                          @for (damageRelation of damageRelations.value; track $index) {
-                            <app-tag text="{{damageRelation.name| replace | titlecase}}"
-                                     textColor="text-white"
-                                     [backgroundColor]="TYPE_MAP[damageRelation.name]">
-                            </app-tag>
-                          }
-                        </div>
+          @if (types$| async; as types) {
+            <div class="grid gap-2 lg:grid-cols-2">
+              @for (type of pokemon.types; track $index) {
+                <div class="flex flex-col gap-2">
+                  <span class="text-lg">{{ type.type.name | replace | titlecase }}</span>
+                  @if (types[type.type.name]; as typeDetail) {
+                    <div class="flex flex-col gap-2">
+                      @for (damageRelations of typeDetail.damage_relations | keyvalue; track $index) {
+                        @if (damageRelations.value.length) {
+                          <div class="flex gap-2 flex-wrap items-center">
+                            <span>{{ damageRelations.key | replace: UNDERSCORE_REG_EXP | titlecase }}</span>
+                            @for (damageRelation of damageRelations.value; track $index) {
+                              <app-tag text="{{damageRelation.name| replace | titlecase}}"
+                                       textColor="text-white"
+                                       [backgroundColor]="TYPE_MAP[damageRelation.name]">
+                              </app-tag>
+                            }
+                          </div>
+                        }
                       }
-                    }
-                  </div>
-                }
-              </div>
-            }
-          </div>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
         </div>
       </div>
     </div>
@@ -89,12 +92,5 @@
 </div>
 <app-search></app-search>
 
-<!--TODO: crawl sprite variants-->
-
-<!--  @if (pokemon.sprites.other.showdown) {-->
-<!--    @for (sprite of pokemon.sprites.other.showdown | keyvalue; track $index) {-->
-<!--      @if (sprite.value) {-->
-<!--        <img [src]="sprite.value" [alt]="pokemon.name"/>-->
-<!--      }-->
-<!--    }-->
-<!--  }-->
+<!--TODO: ability flavor_text_entries if empty effect_entries-->
+<!--TODO: pipe to find ability effect_entries by language-->

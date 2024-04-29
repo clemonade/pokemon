@@ -1,11 +1,10 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, inject, OnInit} from "@angular/core";
-import {ActivatedRoute, RouterLink} from "@angular/router";
-import {EMPTY, map, merge, mergeMap, switchMap, tap} from "rxjs";
+import {ChangeDetectionStrategy, Component, inject} from "@angular/core";
+import {ActivatedRoute, Data, RouterLink} from "@angular/router";
+import {EMPTY, map, mergeMap, scan, switchMap} from "rxjs";
 import {CardComponent} from "../../shared/components/card/card.component";
 import {AsyncPipe, KeyValuePipe, NgTemplateOutlet, TitleCasePipe} from "@angular/common";
-import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {PokeApiService} from "../../core/services/poke-api.service";
-import {Ability, EvolutionChain, PokemonSpecies, Type} from "pokenode-ts";
+import {Ability, Type} from "pokenode-ts";
 import {PokemonExtended} from "../../core/models/pokemon";
 import {DEFAULT_PATH, LANGUAGE, UNDERSCORE_REG_EXP} from "../../core/constants/app";
 import {MatAnchor, MatButton} from "@angular/material/button";
@@ -39,18 +38,10 @@ import {UrlIdPipe} from "../../shared/pipes/urlId.pipe";
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [UrlIdPipe]
 })
-export class DetailComponent implements OnInit {
+export class DetailComponent {
   pokeApiService = inject(PokeApiService);
   idPipe = inject(UrlIdPipe);
   activatedRoute = inject(ActivatedRoute);
-  changeDetectorRef = inject(ChangeDetectorRef);
-  destroyRef = inject(DestroyRef);
-
-  pokemon?: PokemonExtended;
-  types: Record<string, Type> = {};
-  abilities: Record<string, Ability> = {};
-  species?: PokemonSpecies;
-  evolutionChain?: EvolutionChain;
 
   protected readonly LANGUAGE = LANGUAGE;
   protected readonly DEFAULT_PATH = DEFAULT_PATH;
@@ -58,23 +49,21 @@ export class DetailComponent implements OnInit {
   protected readonly TYPE_MAP = TYPE_MAP;
 
   pokemon$ = this.activatedRoute.data.pipe(
-    map(({pokemon}) => {
+    map<Data, PokemonExtended>(({pokemon}) => {
       return pokemon;
-    }),
-    tap((pokemon) => {
-      this.pokemon = pokemon;
     }),
   );
 
-  types$ = this.pokemon$.pipe(
+  evolutionChain$ = this.pokemon$.pipe(
     switchMap((pokemon: PokemonExtended) => {
-      return pokemon.types.map(type => type.type.name);
+      return this.pokeApiService.getSpeciesByNameOrId$(pokemon.species.name);
     }),
-    mergeMap((typeName) => {
-      return this.pokeApiService.getTypeByNameOrId$(typeName);
-    }),
-    tap((type) => {
-      this.types[type.name] = type;
+    switchMap((species) => {
+      const id = this.idPipe.transform(species.evolution_chain.url);
+      if (id)
+        return this.pokeApiService.getEvolutionChainById$(+id);
+      else
+        return EMPTY;
     }),
   );
 
@@ -85,36 +74,26 @@ export class DetailComponent implements OnInit {
     mergeMap((abilityName) => {
       return this.pokeApiService.getAbilityByNameOrId$(abilityName);
     }),
-    tap((ability) => {
-      this.abilities[ability.name] = ability;
-    }),
+    scan<Ability, Record<string, Ability>>((acc, ability) => {
+      return {
+        ...acc,
+        [ability.name]: ability
+      };
+    }, {})
   );
 
-  species$ = this.pokemon$.pipe(
+  types$ = this.pokemon$.pipe(
     switchMap((pokemon: PokemonExtended) => {
-      return this.pokeApiService.getSpeciesByNameOrId$(pokemon.species.name);
+      return pokemon.types.map(type => type.type.name);
     }),
-    tap((species) => {
-      this.species = species;
+    mergeMap((typeName) => {
+      return this.pokeApiService.getTypeByNameOrId$(typeName);
     }),
-    switchMap((species) => {
-      const id = this.idPipe.transform(species.evolution_chain.url);
-      if (id)
-        return this.pokeApiService.getEvolutionChainById$(+id);
-      else
-        return EMPTY;
-    }),
-    tap((evolutionChain) => {
-      this.evolutionChain = evolutionChain;
-    }),
+    scan<Type, Record<string, Type>>((acc, type) => {
+      return {
+        ...acc,
+        [type.name]: type
+      };
+    }, {})
   );
-
-  ngOnInit(): void {
-    merge(this.types$, this.abilities$, this.species$).pipe(
-      tap(() => {
-        this.changeDetectorRef.markForCheck();
-      }),
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe();
-  }
 }
