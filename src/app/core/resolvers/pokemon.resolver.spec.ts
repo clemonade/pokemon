@@ -1,11 +1,12 @@
-import { TestBed } from "@angular/core/testing";
-import { ResolveFn } from "@angular/router";
+import {TestBed} from "@angular/core/testing";
+import {ResolveFn} from "@angular/router";
 
-import { pokemonResolver } from "./pokemon.resolver";
+import {pokemonResolver} from "./pokemon.resolver";
+import {PokemonExtended} from "../models/pokemon";
 
 describe("pokemonResolver", () => {
-  const executeResolver: ResolveFn<boolean> = (...resolverParameters) => 
-      TestBed.runInInjectionContext(() => pokemonResolver(...resolverParameters));
+  const executeResolver: ResolveFn<PokemonExtended> = (...resolverParameters) =>
+    TestBed.runInInjectionContext(() => pokemonResolver(...resolverParameters));
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
