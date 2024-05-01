@@ -9,16 +9,19 @@ import {
 } from "@angular/core";
 import {PokeApiService} from "../../core/services/poke-api.service";
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
-import {NamedAPIResource} from "pokenode-ts";
+import {NamedAPIResource, NamedAPIResourceList} from "pokenode-ts";
 import {
   BehaviorSubject,
+  combineLatest,
   concatMap,
   debounceTime,
   distinctUntilChanged,
   fromEvent,
   map,
-  merge,
   mergeMap,
+  scan,
+  share,
+  startWith,
   switchMap,
   tap
 } from "rxjs";
@@ -29,6 +32,7 @@ import {DEFAULT_PATH, PAGINATION_PARAMS_LIMIT, WINDOWS_RESIZE_DEBOUNCE_TIME} fro
 import {RouterLink} from "@angular/router";
 import {CARD_GAP_PX, CARD_HEIGHT_PX, CARD_WIDTH_PX} from "../../core/constants/style";
 import {SearchComponent} from "../../shared/components/search/search.component";
+import {AsyncPipe} from "@angular/common";
 
 @Component({
   selector: "app-list",
@@ -39,7 +43,8 @@ import {SearchComponent} from "../../shared/components/search/search.component";
     CdkFixedSizeVirtualScroll,
     CdkVirtualForOf,
     RouterLink,
-    SearchComponent
+    SearchComponent,
+    AsyncPipe
   ],
   templateUrl: "./list.component.html",
   styleUrl: "./list.component.scss",
@@ -50,50 +55,63 @@ export class ListComponent implements OnInit {
   changeDetectorRef = inject(ChangeDetectorRef);
   destroyRef = inject(DestroyRef);
 
-  pokemons: NamedAPIResource[] = [];
-  chunkedPokemons: NamedAPIResource[][] = [];
-  pokedex: Record<string, PokemonExtended | undefined> = {};
-
   offset = new BehaviorSubject(0);
   end = false;
 
   protected readonly CARD_HEIGHT_PX = CARD_HEIGHT_PX;
   protected readonly DEFAULT_PATH = DEFAULT_PATH;
 
-  pokemons$ = this.offset.pipe(
+  offset$ = this.offset.pipe(
     concatMap((offset) => {
       return this.pokeApiService.getPokemons$({offset, limit: PAGINATION_PARAMS_LIMIT});
     }),
-    tap(({results, count}) => {
-      this.pokemons = [...this.pokemons, ...results];
-      this.chunkPokemons(); // TODO: chunk result only and merge instead
+    tap(({count}) => {
       this.end = this.offset.value >= count;
     }),
+    share()
+  );
+
+  pokedex$ = this.offset$.pipe(
     switchMap(({results}) => {
       return results.map(pokemon => pokemon.name);
     }),
     mergeMap(name => this.pokeApiService.getPokemonByNameOrId$(name)),
-    tap((pokemon) => {
-      this.pokedex[pokemon.name] = pokemon;
-    }),
+    scan<PokemonExtended, Record<string, PokemonExtended | undefined>>((acc, pokemon) => {
+      acc[pokemon.name] = pokemon;
+      return acc;
+    }, {}),
+  );
+
+  pokemons$ = this.offset$.pipe(
+    scan<NamedAPIResourceList, NamedAPIResource[]>((acc, {results}) => {
+      return [...acc, ...results];
+    }, []),
+    startWith<NamedAPIResource[]>([])
   );
 
   windowResize$ = fromEvent(window, "resize").pipe(
     debounceTime(WINDOWS_RESIZE_DEBOUNCE_TIME),
-    map(() => {
-      return this.getCardsPerRow();
-    }),
+    map(() => this.getCardsPerRow()),
     distinctUntilChanged(),
-    tap(() => {
-      this.chunkPokemons();
-    }),
+    startWith(this.getCardsPerRow())
+  );
+
+  chunkedPokemons$ = combineLatest([this.pokemons$, this.windowResize$]).pipe(
+    map(([pokemons, cardsPerRow]) => {
+      // TODO: chunk result only and merge instead
+      return pokemons.reduce<NamedAPIResource[][]>((acc, curr, index) => {
+        if (index % cardsPerRow === 0) acc.push([curr]);
+        else acc[acc.length - 1].push(curr);
+        return acc;
+      }, []);
+    })
   );
 
   @ViewChild(CdkVirtualScrollViewport)
   cdkVirtualScrollViewport!: CdkVirtualScrollViewport;
 
   ngOnInit(): void {
-    merge(this.pokemons$, this.windowResize$).pipe(
+    this.windowResize$.pipe(
       tap(() => {
         this.changeDetectorRef.markForCheck();
       }),
@@ -109,15 +127,6 @@ export class ListComponent implements OnInit {
     if (end === total) {
       this.offset.next(this.offset.value + PAGINATION_PARAMS_LIMIT);
     }
-  }
-
-  chunkPokemons(): void {
-    const cardsPerRow = this.getCardsPerRow();
-    this.chunkedPokemons = this.pokemons.reduce((acc: NamedAPIResource[][], curr: NamedAPIResource, index: number) => {
-      if (index % cardsPerRow === 0) acc.push([curr]);
-      else acc[acc.length - 1].push(curr);
-      return acc;
-    }, []);
   }
 
   getCardsPerRow(): number {

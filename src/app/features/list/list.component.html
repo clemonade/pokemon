@@ -2,14 +2,16 @@
                              [itemSize]="CARD_HEIGHT_PX"
                              (scrolledIndexChange)="scrollIndexChanged()">
   <div class="flex flex-wrap justify-center gap-4">
-    <ng-container *cdkVirtualFor="let chunk of chunkedPokemons; trackBy: trackByIndex">
-      @for (pokemon of chunk; track $index) {
-        <app-card class="flex"
-                  [pokemon]="pokedex[pokemon.name]"
-                  [link]="'/' + DEFAULT_PATH + '/' + pokedex[pokemon.name]?.id">
-        </app-card>
-      }
-    </ng-container>
+    @if ({ chunkedPokemons: chunkedPokemons$ | async, pokedex: pokedex$ | async }; as p) {
+      <ng-container *cdkVirtualFor="let chunk of p.chunkedPokemons; trackBy: trackByIndex">
+        @for (pokemon of chunk; track $index) {
+          <app-card class="flex"
+                    [pokemon]="p.pokedex?.[pokemon.name]"
+                    [link]="'/' + DEFAULT_PATH + '/' + p.pokedex?.[pokemon.name]?.id">
+          </app-card>
+        }
+      </ng-container>
+    }
   </div>
 </cdk-virtual-scroll-viewport>
 <app-search></app-search>
