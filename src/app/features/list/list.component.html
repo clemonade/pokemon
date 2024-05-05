@@ -5,8 +5,7 @@
     @if ({chunkedPokemons: chunkedPokemons$ | async, pokedex: pokedex$ | async}; as p) {
       <ng-container *cdkVirtualFor="let chunk of p.chunkedPokemons; trackBy: trackByIndex">
         @for (pokemon of chunk; track $index) {
-          <app-card class="flex"
-                    [pokemon]="p.pokedex?.[pokemon.name]"
+          <app-card [pokemon]="p.pokedex?.[pokemon.name]"
                     [link]="'/' + DEFAULT_PATH + '/' + p.pokedex?.[pokemon.name]?.id">
           </app-card>
         }

@@ -1,26 +1,16 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  DestroyRef,
-  inject,
-  OnDestroy,
-  OnInit
-} from "@angular/core";
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnDestroy} from "@angular/core";
 import {MatButton, MatFabButton} from "@angular/material/button";
 import {MatIcon} from "@angular/material/icon";
-import {MatDialog, MatDialogActions, MatDialogClose, MatDialogContent, MatDialogTitle} from "@angular/material/dialog";
+import {MatDialog, MatDialogActions, MatDialogClose, MatDialogTitle} from "@angular/material/dialog";
 import {FormControl, ReactiveFormsModule, ValidatorFn} from "@angular/forms";
 import {catchError, debounceTime, distinctUntilChanged, filter, map, of, switchMap, tap} from "rxjs";
 import {DEFAULT_PATH, SEARCH_DEBOUNCE_TIME, WHITESPACE_REG_EXP} from "../../../core/constants/app";
 import {PokeApiService} from "../../../core/services/poke-api.service";
-import {PokemonExtended} from "../../../core/models/pokemon";
-import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {CardComponent} from "../card/card.component";
 import {MatError, MatFormField, MatInput, MatLabel} from "@angular/material/input";
-import {RouterLink} from "@angular/router";
 import {MatProgressBar} from "@angular/material/progress-bar";
 import {SEARCH_REG_EXP} from "../../../core/constants/pokemon";
+import {AsyncPipe} from "@angular/common";
 
 @Component({
   selector: "app-search",
@@ -53,7 +43,6 @@ export class SearchComponent implements OnDestroy {
 @Component({
   standalone: true,
   imports: [
-    MatDialogContent,
     MatDialogTitle,
     CardComponent,
     MatInput,
@@ -61,20 +50,19 @@ export class SearchComponent implements OnDestroy {
     ReactiveFormsModule,
     MatFormField,
     MatError,
-    RouterLink,
     MatDialogClose,
     MatButton,
     MatDialogActions,
-    MatProgressBar
+    MatProgressBar,
+    AsyncPipe
   ],
   templateUrl: "./search.component.html",
   styleUrl: "./search.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SearchDialogComponent implements OnInit {
+export class SearchDialogComponent {
   pokeApiService = inject(PokeApiService);
   changeDetectorRef = inject(ChangeDetectorRef);
-  destroyRef = inject(DestroyRef);
 
   searchValidator: ValidatorFn = (value) => {
     return value.value
@@ -87,14 +75,13 @@ export class SearchDialogComponent implements OnInit {
     nonNullable: true
   });
 
-  pokemon?: PokemonExtended;
   loading = false;
 
   protected readonly FORMAT_ERROR_CODE = "format";
   protected readonly POKEMON_ERROR_CODE = "pokemon";
   protected readonly DEFAULT_PATH = DEFAULT_PATH;
 
-  formControlValueChanges$ = this.formControl.valueChanges.pipe(
+  pokemon$ = this.formControl.valueChanges.pipe(
     debounceTime(SEARCH_DEBOUNCE_TIME),
     filter(() => !!this.formControl.value && this.formControl.valid),
     // transform to valid params
@@ -115,17 +102,6 @@ export class SearchDialogComponent implements OnInit {
         return of(undefined);
       })
     )),
-    tap((pokemon) => {
-      this.pokemon = pokemon;
-      this.loading = false;
-    }),
+    tap(() => this.loading = false),
   );
-
-  ngOnInit(): void {
-    this.formControlValueChanges$.pipe(
-      tap(() => {
-        this.changeDetectorRef.markForCheck();
-      }),
-      takeUntilDestroyed(this.destroyRef)).subscribe();
-  }
 }

@@ -55,7 +55,7 @@ export class DetailComponent {
   );
 
   evolutionChain$ = this.pokemon$.pipe(
-    switchMap((pokemon: PokemonExtended) => {
+    switchMap((pokemon) => {
       return this.pokeApiService.getSpeciesByNameOrId$(pokemon.species.name);
     }),
     switchMap((species) => {
@@ -68,7 +68,7 @@ export class DetailComponent {
   );
 
   abilities$ = this.pokemon$.pipe(
-    switchMap((pokemon: PokemonExtended) => {
+    switchMap((pokemon) => {
       return pokemon.abilities.map(ability => ability.ability.name);
     }),
     mergeMap((abilityName) => {
@@ -83,7 +83,7 @@ export class DetailComponent {
   );
 
   types$ = this.pokemon$.pipe(
-    switchMap((pokemon: PokemonExtended) => {
+    switchMap((pokemon) => {
       return pokemon.types.map(type => type.type.name);
     }),
     mergeMap((typeName) => {

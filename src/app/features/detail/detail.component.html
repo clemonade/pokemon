@@ -1,10 +1,11 @@
 <div class="flex flex-col gap-4 p-4">
   <div class="flex justify-center">
-    <button mat-button [routerLink]="['/' + DEFAULT_PATH]">Pokémon List</button>
+    <a mat-button [routerLink]="['/' + DEFAULT_PATH]">Pokémon List</a>
   </div>
+
   @if (pokemon$ | async; as pokemon) {
     <div class="grid gap-4 md:grid-cols-3">
-      <div class="grid items-center justify-items-center md:col-span-1">
+      <div class="flex justify-center items-center">
         <app-card [pokemon]="pokemon"></app-card>
       </div>
 
@@ -13,7 +14,7 @@
           <div class="flex flex-col gap-2">
             <span class="text-xl underline">Evolution Chain</span>
             @if (evolutionChain$| async; as evolutionChain) {
-              <div class="flex gap-2 flex-wrap items-center">
+              <div class="flex gap-2 items-center flex-wrap">
                 <ng-container [ngTemplateOutlet]="chainTemplate"
                               [ngTemplateOutletContext]="{$implicit: evolutionChain.chain}">
                 </ng-container>
@@ -61,7 +62,7 @@
           <div class="flex flex-col gap-2">
             <span class="text-xl underline">Type Efficiency</span>
             @if (types$| async; as types) {
-              <div class="grid gap-2 lg:grid-cols-2">
+              <div class="grid gap-2 md:grid-cols-2">
                 @for (type of pokemon.types; track $index) {
                   <div class="flex flex-col gap-2">
                     <span class="text-lg">{{ type.type.name | replace | titlecase }}</span>
@@ -69,7 +70,7 @@
                       <div class="flex flex-col gap-2">
                         @for (damageRelations of typeDetail.damage_relations | keyvalue; track $index) {
                           @if (damageRelations.value.length) {
-                            <div class="flex gap-2 flex-wrap items-center">
+                            <div class="flex gap-2 items-center flex-wrap">
                               <span>{{ damageRelations.key | replace: UNDERSCORE_REG_EXP | titlecase }}</span>
                               @for (damageRelation of damageRelations.value; track $index) {
                                 <app-tag text="{{damageRelation.name| replace | titlecase}}"

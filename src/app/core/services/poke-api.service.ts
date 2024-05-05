@@ -11,17 +11,17 @@ import {BypassInterceptor} from "../models/app";
   providedIn: "root"
 })
 export class PokeApiService {
-  protected readonly POKEMON_ENDPOINT = "https://pokeapi.co/api/v2/";
+  protected readonly POKEMON_ENDPOINT = "https://pokeapi.co/api/v2";
   httpClient = inject(HttpClient);
 
-  getPokemons$: (params?: PokemonPaginationParams) => Observable<NamedAPIResourceList> = (params?: PokemonPaginationParams) => this.httpClient.get<NamedAPIResourceList>(`${this.POKEMON_ENDPOINT}pokemon/`, {params});
+  getPokemons$: (params?: PokemonPaginationParams) => Observable<NamedAPIResourceList> = (params?: PokemonPaginationParams) => this.httpClient.get<NamedAPIResourceList>(`${this.POKEMON_ENDPOINT}/pokemon/`, {params});
   getPokemonByNameOrId$: (nameOrId: (string | number), bypassInterceptor?: BypassInterceptor) => Observable<PokemonExtended> = (nameOrId: string | number, bypassInterceptor?: BypassInterceptor) => {
     const context = new HttpContext().set(BYPASS_LOADING_INTERCEPTOR, bypassInterceptor?.loading);
     context.set(BYPASS_ERROR_INTERCEPTOR, bypassInterceptor?.error);
-    return this.httpClient.get<PokemonExtended>(`${this.POKEMON_ENDPOINT}pokemon/${nameOrId}`, {context});
+    return this.httpClient.get<PokemonExtended>(`${this.POKEMON_ENDPOINT}/pokemon/${nameOrId}`, {context});
   };
-  getTypeByNameOrId$: (nameOrId: (string | number)) => Observable<Type> = (nameOrId: string | number) => this.httpClient.get<Type>(`${this.POKEMON_ENDPOINT}type/${nameOrId}`);
-  getAbilityByNameOrId$: (nameOrId: (string | number)) => Observable<Ability> = (nameOrId: string | number) => this.httpClient.get<Ability>(`${this.POKEMON_ENDPOINT}ability/${nameOrId}`);
-  getSpeciesByNameOrId$: (nameOrId: (string | number)) => Observable<PokemonSpecies> = (nameOrId: string | number) => this.httpClient.get<PokemonSpecies>(`${this.POKEMON_ENDPOINT}pokemon-species/${nameOrId}`);
-  getEvolutionChainById$: (id: number) => Observable<EvolutionChain> = (id: number) => this.httpClient.get<EvolutionChain>(`${this.POKEMON_ENDPOINT}evolution-chain/${id}`);
+  getTypeByNameOrId$: (nameOrId: (string | number)) => Observable<Type> = (nameOrId: string | number) => this.httpClient.get<Type>(`${this.POKEMON_ENDPOINT}/type/${nameOrId}`);
+  getAbilityByNameOrId$: (nameOrId: (string | number)) => Observable<Ability> = (nameOrId: string | number) => this.httpClient.get<Ability>(`${this.POKEMON_ENDPOINT}/ability/${nameOrId}`);
+  getSpeciesByNameOrId$: (nameOrId: (string | number)) => Observable<PokemonSpecies> = (nameOrId: string | number) => this.httpClient.get<PokemonSpecies>(`${this.POKEMON_ENDPOINT}/pokemon-species/${nameOrId}`);
+  getEvolutionChainById$: (id: number) => Observable<EvolutionChain> = (id: number) => this.httpClient.get<EvolutionChain>(`${this.POKEMON_ENDPOINT}/evolution-chain/${id}`);
 }

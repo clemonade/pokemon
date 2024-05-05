@@ -7,14 +7,18 @@
     <mat-form-field class="w-full">
       <mat-label># or name</mat-label>
       <input matInput [formControl]="formControl" placeholder="#0001, 1 or bulbasaur">
-      @if (formControl.hasError(FORMAT_ERROR_CODE)){
+      @if (formControl.hasError(FORMAT_ERROR_CODE)) {
         <mat-error># or name is invalid</mat-error>
       }
-      @if (formControl.hasError(POKEMON_ERROR_CODE)){
+      @if (formControl.hasError(POKEMON_ERROR_CODE)) {
         <mat-error>Pokémon not found</mat-error>
       }
     </mat-form-field>
-    <app-card [pokemon]="pokemon" [link]="'/' + DEFAULT_PATH + '/' + pokemon?.id"></app-card>
+    @if (pokemon$ | async; as pokemon) {
+      <app-card [pokemon]="pokemon" [link]="'/' + DEFAULT_PATH + '/' + pokemon?.id"></app-card>
+    } @else {
+      <app-card></app-card>
+    }
   </div>
 </div>
 <mat-dialog-actions align="end">
