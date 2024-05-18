@@ -52,13 +52,13 @@ export class ListComponent {
   protected readonly CARD_HEIGHT_PX = CARD_HEIGHT_PX;
   protected readonly DEFAULT_PATH = DEFAULT_PATH;
 
-  offset$ = this.offset.pipe(
+  offsetPokemons$ = this.offset.pipe(
     concatMap((offset) => this.pokeApiService.getPokemons$({offset, limit: PAGINATION_PARAMS_LIMIT})),
     tap(({count}) => this.end = this.offset.value >= count),
     share()
   );
 
-  pokedex$ = this.offset$.pipe(
+  pokedex$ = this.offsetPokemons$.pipe(
     switchMap(({results}) => results.map(pokemon => pokemon.name)),
     mergeMap(name => this.pokeApiService.getPokemonByNameOrId$(name)),
     scan<PokemonExtended, Record<string, PokemonExtended | undefined>>((acc, pokemon) => {
@@ -68,19 +68,19 @@ export class ListComponent {
     startWith<Record<string, PokemonExtended | undefined>>({})
   );
 
-  pokemons$ = this.offset$.pipe(
+  pokemons$ = this.offsetPokemons$.pipe(
     scan<NamedAPIResourceList, NamedAPIResource[]>((acc, {results}) => [...acc, ...results], []),
     startWith<NamedAPIResource[]>([])
   );
 
-  windowResize$ = fromEvent(window, "resize").pipe(
+  chunkSize$ = fromEvent(window, "resize").pipe(
     debounceTime(WINDOWS_RESIZE_DEBOUNCE_TIME),
     map(this.chunkSize),
     distinctUntilChanged()
   );
 
-  chunkLatestPokemons$ = this.offset$.pipe(
-    withLatestFrom(this.windowResize$.pipe(startWith(this.chunkSize()))),
+  chunkOffsetPokemons$ = this.offsetPokemons$.pipe(
+    withLatestFrom(this.chunkSize$.pipe(startWith(this.chunkSize()))),
     scan<[NamedAPIResourceList, number], NamedAPIResource[][]>((acc, [{results}, chunkSize]) => {
       const fill = acc.length ? chunkSize - acc[acc.length - 1].length : 0;
       const resultsClone = [...results]; // avoid source mutation from splice
@@ -91,12 +91,12 @@ export class ListComponent {
     }, [])
   );
 
-  chunkPokemons$ = this.windowResize$.pipe(
+  chunkPokemons$ = this.chunkSize$.pipe(
     withLatestFrom(this.pokemons$),
     map(([chunkSize, pokemons]) => chunk(pokemons, chunkSize))
   );
 
-  chunkedPokemons$ = merge(this.chunkLatestPokemons$, this.chunkPokemons$);
+  chunkedPokemons$ = merge(this.chunkOffsetPokemons$, this.chunkPokemons$);
 
   @ViewChild(CdkVirtualScrollViewport)
   cdkVirtualScrollViewport!: CdkVirtualScrollViewport;

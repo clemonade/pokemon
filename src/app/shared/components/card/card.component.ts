@@ -34,6 +34,7 @@ import {MatIcon} from "@angular/material/icon";
 export class CardComponent {
   @Input() pokemon?: PokemonExtended;
   @Input() link?: string;
+
   protected readonly STAT_MAP = STAT_MAP;
   protected readonly TYPE_MAP = TYPE_MAP;
   protected readonly COMMA_REG_EXP = COMMA_REG_EXP;
